@@ -5,7 +5,7 @@ import com.example.librarymanager.ui.Digitalizable
 class Book(
     id: Int,
     available: Boolean,
-    override val name: String, // Добавлено override
+    override val name: String,
     val pages: Int,
     val author: String
 ) : LibraryItem(id, available, name), Borrowable, Readable, Digitalizable { // Добавлена реализация интерфейса Digitalizable
