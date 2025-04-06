@@ -15,6 +15,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:label="@string/app_name"
             android:theme="@style/Theme.LibraryManager">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -24,7 +25,7 @@
         </activity>
         <activity
             android:name=".DetailActivity"
-            android:theme="@style/Theme.LibraryManager" />
+            android:exported="false" />
     </application>
 
 </manifest>
