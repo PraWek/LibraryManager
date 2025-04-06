@@ -1,8 +1,7 @@
-
 package com.example.librarymanager
 
 import android.os.Bundle
-import android.widget.Toast
+import android.content.Intent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -39,18 +38,9 @@ class MainActivity : ComponentActivity() {
                             LibraryCard(
                                 item = item,
                                 onItemClick = { clickedItem ->
-                                    clickedItem.available = !clickedItem.available
-                                    items = items.toMutableList().apply {
-                                        val index = indexOfFirst { it.id == clickedItem.id }
-                                        if (index != -1) {
-                                            this[index] = clickedItem
-                                        }
-                                    }
-                                    Toast.makeText(
-                                        this@MainActivity,
-                                        "Элемент с id ${clickedItem.id}",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    val intent = Intent(this@MainActivity, DetailActivity::class.java)
+                                    intent.putExtra("item_id", clickedItem.id)
+                                    startActivity(intent)
                                 }
                             )
                         }
