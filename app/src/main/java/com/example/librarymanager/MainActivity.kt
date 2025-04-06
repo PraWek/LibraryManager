@@ -1,7 +1,6 @@
 package com.example.librarymanager
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -78,17 +77,19 @@ class MainActivity : ComponentActivity() {
                             LibraryCard(
                                 item = item,
                                 onItemClick = { clickedItem ->
-                                    val intent = android.content.Intent(this@MainActivity, DetailActivity::class.java).apply {
-                                        putExtra("ITEM_ID", clickedItem.id)
-                                        putExtra("ITEM_NAME", clickedItem.name)
-                                        putExtra("ITEM_TYPE", when(clickedItem) {
-                                            is Book -> "Книга"
-                                            is Newspaper -> "Газета"
-                                            is Disc -> "Диск"
-                                            else -> "Неизвестный тип"
-                                        })
-                                        putExtra("DETAILED_INFO", clickedItem.getDetailedInfo())
+                                    val itemType = when(clickedItem) {
+                                        is Book -> "Книга"
+                                        is Newspaper -> "Газета"
+                                        is Disc -> "Диск"
+                                        else -> "Неизвестный тип"
                                     }
+                                    val intent = DetailActivity.createIntent(
+                                        this@MainActivity,
+                                        clickedItem.id,
+                                        clickedItem.name,
+                                        itemType,
+                                        clickedItem.getDetailedInfo()
+                                    )
                                     startActivity(intent)
                                 }
                             )
