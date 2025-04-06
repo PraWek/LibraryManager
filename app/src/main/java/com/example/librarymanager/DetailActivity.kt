@@ -18,8 +18,9 @@ import com.example.librarymanager.ui.theme.LibraryManagerTheme
 class DetailActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val isNewItem = intent.getBooleanExtra("is_new_item", false)
         val itemId = intent.getIntExtra("item_id", -1)
-        val item = LibraryManager().getAllItems().find { it.id == itemId }
+        val item = if (!isNewItem) LibraryManager().getAllItems().find { it.id == itemId } else null
 
         setContent {
             LibraryManagerTheme {

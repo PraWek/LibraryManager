@@ -9,6 +9,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,7 +32,20 @@ class MainActivity : ComponentActivity() {
                 val libraryManager = remember { LibraryManager() }
                 var items by remember { mutableStateOf(libraryManager.getAllItems()) }
 
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    floatingActionButton = {
+                        FloatingActionButton(
+                            onClick = {
+                                val intent = Intent(this@MainActivity, DetailActivity::class.java)
+                                intent.putExtra("is_new_item", true)
+                                startActivity(intent)
+                            }
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = "Add item")
+                        }
+                    }
+                ) { innerPadding ->
                     LazyColumn(
                         modifier = Modifier
                             .padding(innerPadding)
