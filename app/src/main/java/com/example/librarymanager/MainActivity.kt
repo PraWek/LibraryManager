@@ -13,16 +13,12 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.library.Book
 import com.example.library.Disc
 import com.example.librarymanager.ui.components.ItemTypeDialog
 import com.example.librarymanager.ui.components.AddItemDialog
-import com.example.library.LibraryManager
 import com.example.library.Newspaper
 import com.example.librarymanager.ui.components.LibraryCard
 import com.example.librarymanager.ui.theme.LibraryManagerTheme
@@ -33,15 +29,16 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             LibraryManagerTheme {
-                val libraryManager = remember { LibraryManager() }
-                var items by remember { mutableStateOf(libraryManager.getAllItems()) }
-                var showTypeDialog by remember { mutableStateOf(false) }
-                var selectedType by remember { mutableStateOf<String?>(null) }
+                // Use ViewModel that will survive configuration changes
+                val viewModel: LibraryViewModel = viewModel()
+                val items = viewModel.items
+                val showTypeDialog = viewModel.showTypeDialog
+                val selectedType = viewModel.selectedType
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     floatingActionButton = {
-                        FloatingActionButton(onClick = { showTypeDialog = true }) {
+                        FloatingActionButton(onClick = { viewModel.toggleTypeDialog(true) }) {
                             Icon(Icons.Default.Add, contentDescription = "Добавить")
                         }
                     }
@@ -49,10 +46,10 @@ class MainActivity : ComponentActivity() {
 
                     if (showTypeDialog) {
                         ItemTypeDialog(
-                            onDismiss = { showTypeDialog = false },
+                            onDismiss = { viewModel.toggleTypeDialog(false) },
                             onTypeSelected = { type ->
-                                selectedType = type
-                                showTypeDialog = false
+                                viewModel.updateSelectedType(type)
+                                viewModel.toggleTypeDialog(false)
                             }
                         )
                     }
@@ -61,10 +58,9 @@ class MainActivity : ComponentActivity() {
                         AddItemDialog(
                             type = type,
                             nextId = items.maxOf { it.id } + 1,
-                            onDismiss = { selectedType = null },
+                            onDismiss = { viewModel.updateSelectedType(null) },
                             onItemCreated = { newItem ->
-                                items = items + newItem
-                                selectedType = null
+                                viewModel.addItem(newItem)
                             }
                         )
                     }
