@@ -4,11 +4,16 @@ import androidx.lifecycle.ViewModel
 import androidx.compose.runtime.*
 import com.example.library.LibraryItem
 import com.example.library.LibraryManager
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
 class LibraryViewModel : ViewModel() {
     private val libraryManager = LibraryManager()
+
+    private var _listScrollPosition = 0
+    var listScrollPosition: Int
+        get() = _listScrollPosition
+        set(value) {
+            _listScrollPosition = value
+        }
 
     var items by mutableStateOf(libraryManager.getAllItems())
         private set

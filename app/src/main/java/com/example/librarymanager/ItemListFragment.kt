@@ -11,7 +11,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.unit.dp
 import android.content.res.Configuration
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.librarymanager.ui.components.LibraryCard
@@ -20,7 +19,16 @@ import com.example.librarymanager.ui.components.LibraryCard
 fun ItemListFragment(
     viewModel: LibraryViewModel = viewModel()
 ) {
-    val listState = rememberLazyListState()
+    val listState = rememberLazyListState(
+        initialFirstVisibleItemIndex = viewModel.listScrollPosition
+    )
+
+    // Save scroll position when leaving the list
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.listScrollPosition = listState.firstVisibleItemIndex
+        }
+    }
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
