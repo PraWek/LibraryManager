@@ -29,7 +29,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             LibraryManagerTheme {
-                // Use ViewModel that will survive configuration changes
                 val viewModel: LibraryViewModel = viewModel()
                 val items = viewModel.items
                 val showTypeDialog = viewModel.showTypeDialog
