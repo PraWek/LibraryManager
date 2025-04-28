@@ -30,18 +30,78 @@ class MainActivity : ComponentActivity() {
         setContent {
             LibraryManagerTheme {
                 val viewModel: LibraryViewModel = viewModel()
+                viewModel.initDataStore(this)
                 val items = viewModel.items
                 val showTypeDialog = viewModel.showTypeDialog
                 val selectedType = viewModel.selectedType
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
+                    topBar = {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            Button(onClick = { viewModel.setGoogleBooksMode(false) }) {
+                                Text("Библиотека")
+                            }
+                            Button(onClick = { viewModel.setGoogleBooksMode(true) }) {
+                                Text("Google Books")
+                            }
+                        }
+                    },
                     floatingActionButton = {
-                        FloatingActionButton(onClick = { viewModel.toggleTypeDialog(true) }) {
-                            Icon(Icons.Default.Add, contentDescription = "Добавить")
+                        if (!uiState.value.isGoogleBooksMode) {
+                            FloatingActionButton(onClick = { viewModel.toggleTypeDialog(true) }) {
+                                Icon(Icons.Default.Add, contentDescription = "Добавить")
+                            }
                         }
                     }
                 ) { innerPadding ->
+                    if (uiState.value.isGoogleBooksMode) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp)
+                        ) {
+                            TextField(
+                                value = uiState.value.searchAuthor,
+                                onValueChange = { viewModel.updateSearchAuthor(it) },
+                                label = { Text("Author") },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            TextField(
+                                value = uiState.value.searchTitle,
+                                onValueChange = { viewModel.updateSearchTitle(it) },
+                                label = { Text("Title") },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(
+                                onClick = { viewModel.searchGoogleBooks() },
+                                enabled = uiState.value.searchAuthor.length >= 3 ||
+                                        uiState.value.searchTitle.length >= 3,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Search")
+                            }
+
+                            if (uiState.value.isLoading) {
+                                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                            }
+
+                            if (uiState.value.error != null) {
+                                Text(
+                                    text = uiState.value.error!!,
+                                    color = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.padding(vertical = 8.dp)
+                                )
+                            }
+                        }
+                    }
 
                     if (showTypeDialog) {
                         ItemTypeDialog(
@@ -68,10 +128,10 @@ class MainActivity : ComponentActivity() {
                             .padding(innerPadding)
                             .fillMaxSize()
                     ) {
-                        items(items, key = { "${it.id}-${it.available}" }) { item ->
+                        items(viewModel.uiState.value.items, key = { item -> "${item.id}" }) { item ->
                             LibraryCard(
                                 item = item,
-                                onItemClick = { clickedItem ->
+                                onClick = { clickedItem ->
                                     val itemType = when(clickedItem) {
                                         is Book -> "Книга"
                                         is Newspaper -> "Газета"
