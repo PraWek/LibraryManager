@@ -1,7 +1,7 @@
-
 package com.example.librarymanager
 
 import android.content.res.Configuration
+import kotlinx.coroutines.flow.snapshotFlow
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,6 +17,8 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.librarymanager.ui.components.*
+import kotlinx.coroutines.flow.snapshotFlow
+
 
 @Composable
 fun ItemListFragment(
@@ -32,74 +34,58 @@ fun ItemListFragment(
         }
     }
 
-    Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(onClick = { viewModel.toggleTypeDialog(true) }) {
-                Icon(Icons.Default.Add, contentDescription = "Добавить")
-            }
-        }
-    ) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-            when {
-                uiState.isLoading -> {
-                    LazyColumn {
-                        items(5) {
-                            ShimmerItem()
-                        }
-                    }
-                }
-                uiState.error != null -> {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = uiState.error,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.error
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { viewModel.loadItems() }) {
-                            Text("Retry")
-                        }
-                    }
-                }
-                else -> {
-                    LazyColumn(
-                        state = listState
-                    ) {
-                        items(uiState.items) { item ->
-                            LibraryCard(
-                                item = item,
-                                onItemClick = { clickedItem ->
-                                    if (isLandscape) {
-                                        viewModel.showDetailInRight(clickedItem)
-                                    } else {
-                                        viewModel.navigateToDetail(clickedItem)
-                                    }
-                                }
-                            )
-                        }
-                    }
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.firstVisibleItemIndex to listState.layoutInfo.visibleItemsInfo.size }
+            .collect { (firstVisible, _) ->
+                if (firstVisible <= 10 && !uiState.isLoading) {
+                    viewModel.loadPreviousItems()
                 }
             }
-        }
+    }
 
-        if (viewModel.showTypeDialog) {
-            ItemTypeDialog(
-                onDismiss = { viewModel.toggleTypeDialog(false) },
-                onTypeSelected = { type ->
-                    viewModel.updateSelectedType(type)
-                    viewModel.toggleTypeDialog(false)
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
+            .collect { lastVisible ->
+                if (lastVisible != null &&
+                    lastVisible >= uiState.items.size - 10 &&
+                    !uiState.isLoading &&
+                    uiState.hasMoreItems) {
+                    viewModel.loadMoreItems()
                 }
+            }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (uiState.items.isEmpty() && !uiState.isLoading) {
+            Text(
+                text = "No items found",
+                modifier = Modifier.align(Alignment.Center)
             )
+        } else {
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(uiState.items) { item ->
+                    LibraryCard(
+                        item = item,
+                        onClick = { clickedItem ->
+                            viewModel.selectItem(clickedItem)
+                        }
+                    )
+                }
+
+                if (uiState.isLoading) {
+                    item {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                                .wrapContentSize(Alignment.Center)
+                        )
+                    }
+                }
+            }
         }
     }
 }

@@ -30,6 +30,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             LibraryManagerTheme {
                 val viewModel: LibraryViewModel = viewModel()
+                viewModel.initDataStore(this)
                 val items = viewModel.items
                 val showTypeDialog = viewModel.showTypeDialog
                 val selectedType = viewModel.selectedType
@@ -68,10 +69,10 @@ class MainActivity : ComponentActivity() {
                             .padding(innerPadding)
                             .fillMaxSize()
                     ) {
-                        items(items, key = { "${it.id}-${it.available}" }) { item ->
+                        items(viewModel.uiState.value.items, key = { item -> "${item.id}" }) { item ->
                             LibraryCard(
                                 item = item,
-                                onItemClick = { clickedItem ->
+                                onClick = { clickedItem ->
                                     val itemType = when(clickedItem) {
                                         is Book -> "Книга"
                                         is Newspaper -> "Газета"
