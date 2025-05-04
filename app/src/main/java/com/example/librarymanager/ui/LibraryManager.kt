@@ -30,6 +30,10 @@ class LibraryManager {
 
     fun getAllItems(): List<LibraryItem> = items.toList()
 
+    fun addItem(item: LibraryItem) {
+        items.add(item)
+    }
+
     fun selectItem(index: Int, type: String): LibraryItem? {
         val filteredItems = when (type) {
             "книги" -> items.filterIsInstance<Book>()
